@@ -4,6 +4,8 @@ Give Claude AI direct access to your [MILKEE](https://milkee.ch) accounting data
 
 > **Note:** This is an unofficial community project, not an official MILKEE product.
 
+> **Installation:** Skip the `npm i milkee-mcp` command shown above - that's for developers. MCP users just need to add the config below to Claude. [Jump to Quick Start](#quick-start)
+
 ## What is this?
 
 [MILKEE](https://milkee.ch) is Swiss accounting software for freelancers and small businesses.
