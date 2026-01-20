@@ -19,7 +19,7 @@ Works with **Claude Desktop** and **Claude Code (CLI)**.
 
 ---
 
-[MILKEE](https://milkee.ch) | [API Docs](https://apidocs.milkee.ch/) | [MCP Protocol](https://modelcontextprotocol.io) | [Changelog](CHANGELOG.md)
+[MILKEE](https://milkee.ch) | [API Docs](https://apidocs.milkee.ch/) | [MCP Protocol](https://modelcontextprotocol.io) | [Changelog](CHANGELOG.md) | [Deutsche Anleitung](QUICKSTART.de.md)
 
 ## Disclaimer
 
