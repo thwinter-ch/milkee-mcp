@@ -37,7 +37,7 @@ Works with **Claude Desktop**, **Claude Code (CLI)**, and **claude.ai** (with MC
 Claude can generate different levels of financial reports depending on how you ask:
 
 ### Quick Summary
-**Prompt:** "How is my business doing?" or "Give me a financial summary"
+**Prompt:** "How is my business doing?"
 
 Fast overview using a single API call. Returns:
 - Revenue, expenses, net profit, profit margin
@@ -101,10 +101,10 @@ Billing history and revenue for a specific customer you invoice.
 ### Business Overview
 | Prompt | What You Get |
 |--------|--------------|
-| "How is my business doing?" | Quick financial health summary |
-| "Give me a complete financial assessment" | Deep analysis with trends and insights |
-| "What's my profit this year?" | Revenue minus expenses |
-| "Show me my cash position" | Bank balance and receivables |
+| "How is my business doing?" | Quick summary: profit, invoices, cash |
+| "Give me a complete financial assessment" | Deep analysis: trends, top customers, expense categories |
+| "What's my profit this year?" | Revenue minus expenses calculation |
+| "Who are my top customers by revenue?" | Customer ranking |
 
 ### Invoicing
 | Prompt | What You Get |

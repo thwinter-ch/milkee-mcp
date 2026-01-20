@@ -442,7 +442,7 @@ const tools: Tool[] = [
         tag_id: { type: 'number', description: 'Filter by tag ID' },
         billable: { type: 'boolean', description: 'Filter by billable status' },
         sort: { type: 'string', description: 'Sort field (e.g., date, sum)' },
-        include: { type: 'string', description: 'Include relations: customer, project, tags, tax_rate, accounts' },
+        include: { type: 'string', description: 'Include relations (comma-separated): customer, tags, tax_rate, credit_account, debit_account, sub_entries, document' },
       },
     },
   },
@@ -453,7 +453,7 @@ const tools: Tool[] = [
       type: 'object',
       properties: {
         id: { type: 'number', description: 'Entry ID' },
-        include: { type: 'string', description: 'Include relations' },
+        include: { type: 'string', description: 'Include relations (comma-separated): customer, tags, tax_rate, credit_account, debit_account, sub_entries, document' },
       },
       required: ['id'],
     },
