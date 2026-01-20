@@ -1,0 +1,36 @@
+{
+  "name": "milkee-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for MILKEE Swiss accounting software",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "milkee-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "milkee",
+    "accounting",
+    "swiss",
+    "invoicing",
+    "time-tracking"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

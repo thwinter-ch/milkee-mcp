@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:milkee.ch)",
+      "WebSearch",
+      "WebFetch(domain:apidocs.milkee.ch)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: MILKEE MCP server\n\nMCP server for MILKEE Swiss accounting software with 50+ tools:\n- Customers, Projects, Tasks\n- Time tracking with timer\n- Bookkeeping entries\n- Products, Accounts, Tags, Tax rates, Contacts\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}
