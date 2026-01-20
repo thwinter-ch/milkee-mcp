@@ -95,10 +95,14 @@ If you only want Claude to **read and analyze** your data without making changes
 ## Usage with Claude Code (CLI)
 
 ```bash
-claude mcp add milkee -- npx -y milkee-mcp@latest
+claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-id -- npx -y milkee-mcp@latest
 ```
 
-Then set environment variables `MILKEE_API_TOKEN` and `MILKEE_COMPANY_ID`.
+For **read-only mode** in Claude Code:
+
+```bash
+claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-id -e MILKEE_READ_ONLY=true -- npx -y milkee-mcp@latest
+```
 
 ---
 
@@ -108,7 +112,7 @@ Then set environment variables `MILKEE_API_TOKEN` and `MILKEE_COMPANY_ID`.
 
 | Term | Meaning | Example |
 |------|---------|---------|
-| **Company** | YOUR business (the MILKEE account holder) | "Tafelwart GmbH" |
+| **Company** | YOUR business (the MILKEE account holder) | "Blizzard Ventures" |
 | **Customer** | People/businesses you bill | "Acme Corp", "John Smith" |
 
 When asking Claude about your business:
@@ -360,29 +364,12 @@ For local development with Claude Desktop, point to your local build:
 
 ---
 
-## Changelog
-
-### 1.2.0
-- **Added:** `milkee_get_company_summary` - Get YOUR business overview (invoices, revenue, expenses, profit, cash position)
-- **Fixed:** Response size optimization - list endpoints now return slim data (96% smaller responses)
-- **Improved:** Tool descriptions to clarify company vs customer (your business vs people you bill)
-
-### 1.1.0
-- **Added:** Invoice tools (list, get, create, update, delete, mark paid, send)
-- **Added:** Proposal tools (list, get, create, update, delete, convert to invoice, send)
-- **Added:** Read-only mode (`MILKEE_READ_ONLY=true`) for safe analysis
-- **Improved:** Tool descriptions with better accounting context
-
-### 1.0.x
-- Initial release with customers, projects, time tracking, bookkeeping, products, tags, tasks
-
----
-
 ## Links
 
 - [MILKEE Website](https://milkee.ch)
 - [MILKEE API Docs](https://apidocs.milkee.ch/)
 - [MCP Protocol](https://modelcontextprotocol.io)
+- [Changelog](CHANGELOG.md)
 - [Report Issues](https://github.com/thwinter-ch/milkee-mcp/issues)
 
 ## Disclaimer
