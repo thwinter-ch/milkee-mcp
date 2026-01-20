@@ -368,6 +368,81 @@ export class MilkeeApi {
   async deleteContact(customerId: number, contactId: number) {
     return this.request<void>('DELETE', `/customers/${customerId}/contacts/${contactId}`);
   }
+
+  // ==================== INVOICES ====================
+
+  async listInvoices(params?: PaginationParams & {
+    'filter[status]'?: InvoiceStatus;
+    'filter[customer_id]'?: number;
+    'filter[project_id]'?: number;
+    'filter[date]'?: string;
+    'filter[overdue]'?: boolean;
+    include?: string;
+    sort?: string;
+  }) {
+    return this.request<ApiResponse<Invoice[]>>('GET', '/invoices', undefined, params);
+  }
+
+  async getInvoice(id: number, include?: string) {
+    return this.request<Invoice>('GET', `/invoices/${id}`, undefined, { include });
+  }
+
+  async createInvoice(data: CreateInvoiceInput) {
+    return this.request<{ data: Invoice }>('POST', '/invoices', data);
+  }
+
+  async updateInvoice(id: number, data: Partial<CreateInvoiceInput> & { status?: InvoiceStatus }) {
+    return this.request<{ data: Invoice }>('PUT', `/invoices/${id}`, data);
+  }
+
+  async deleteInvoice(id: number) {
+    return this.request<void>('DELETE', `/invoices/${id}`);
+  }
+
+  async markInvoicePaid(id: number, payment_date?: string) {
+    return this.request<{ data: Invoice }>('POST', `/invoices/${id}/paid`, { payment_date });
+  }
+
+  async sendInvoice(id: number, email?: string) {
+    return this.request<{ data: Invoice }>('POST', `/invoices/${id}/send`, { email });
+  }
+
+  // ==================== PROPOSALS ====================
+
+  async listProposals(params?: PaginationParams & {
+    'filter[status]'?: ProposalStatus;
+    'filter[customer_id]'?: number;
+    'filter[project_id]'?: number;
+    'filter[date]'?: string;
+    include?: string;
+    sort?: string;
+  }) {
+    return this.request<ApiResponse<Proposal[]>>('GET', '/proposals', undefined, params);
+  }
+
+  async getProposal(id: number, include?: string) {
+    return this.request<Proposal>('GET', `/proposals/${id}`, undefined, { include });
+  }
+
+  async createProposal(data: CreateProposalInput) {
+    return this.request<{ data: Proposal }>('POST', '/proposals', data);
+  }
+
+  async updateProposal(id: number, data: Partial<CreateProposalInput> & { status?: ProposalStatus }) {
+    return this.request<{ data: Proposal }>('PUT', `/proposals/${id}`, data);
+  }
+
+  async deleteProposal(id: number) {
+    return this.request<void>('DELETE', `/proposals/${id}`);
+  }
+
+  async convertProposalToInvoice(id: number) {
+    return this.request<{ data: Invoice }>('POST', `/proposals/${id}/convert`);
+  }
+
+  async sendProposal(id: number, email?: string) {
+    return this.request<{ data: Proposal }>('POST', `/proposals/${id}/send`, { email });
+  }
 }
 
 // ==================== TYPE DEFINITIONS ====================
@@ -611,4 +686,125 @@ export interface CreateContactInput {
   email?: string;
   phone?: string;
   position?: string;
+}
+
+// ==================== INVOICES ====================
+
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+export interface Invoice {
+  id: number;
+  company_id: number;
+  customer_id: number;
+  contact_id?: number;
+  proposal_id?: number;
+  project_id?: number;
+  bank_account_id?: number;
+  number: number;
+  title: string;
+  lang: string;
+  date: string;
+  payable_until: string;
+  positions: string; // JSON string of line items
+  remarks_top?: string;
+  remarks?: string;
+  status: InvoiceStatus;
+  currency: string;
+  total_value: number;
+  discount_rate?: number;
+  discount_amount?: number;
+  total_value_with_discount: number;
+  vat_active: boolean;
+  vat_rate?: number;
+  vat_amount?: number;
+  total_value_with_vat?: number;
+  final_value: number;
+  reference?: string;
+  qr_reference?: string;
+  entry_id?: number;
+  repeat: boolean;
+  repeat_interval?: string;
+  overdue: boolean;
+  open_total: number;
+  created_at: string;
+  updated_at: string;
+  customer?: Customer;
+}
+
+export interface CreateInvoiceInput {
+  customer_id: number;
+  title: string;
+  date: string;
+  payable_until: string;
+  positions: string; // JSON string of line items
+  contact_id?: number;
+  project_id?: number;
+  bank_account_id?: number;
+  lang?: string;
+  remarks_top?: string;
+  remarks?: string;
+  currency?: string;
+  discount_rate?: number;
+  discount_amount?: number;
+  vat_active?: boolean;
+  vat_rate?: number;
+  tax_rate_id?: number;
+}
+
+// ==================== PROPOSALS ====================
+
+export type ProposalStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'expired';
+
+export interface Proposal {
+  id: number;
+  company_id: number;
+  customer_id: number;
+  contact_id?: number;
+  invoice_id?: number;
+  project_id?: number;
+  number: number;
+  title: string;
+  lang: string;
+  date: string;
+  valid_until: string;
+  positions: string; // JSON string of line items
+  remarks_top?: string;
+  remarks?: string;
+  status: ProposalStatus;
+  currency: string;
+  total_value: number;
+  discount_rate?: number;
+  discount_amount?: number;
+  total_value_with_discount: number;
+  vat_active: boolean;
+  vat_rate?: number;
+  vat_amount?: number;
+  total_value_with_vat?: number;
+  final_value: number;
+  with_signature: boolean;
+  signature_remark?: string;
+  created_at: string;
+  updated_at: string;
+  customer?: Customer;
+}
+
+export interface CreateProposalInput {
+  customer_id: number;
+  title: string;
+  date: string;
+  valid_until: string;
+  positions: string; // JSON string of line items
+  contact_id?: number;
+  project_id?: number;
+  lang?: string;
+  remarks_top?: string;
+  remarks?: string;
+  currency?: string;
+  discount_rate?: number;
+  discount_amount?: number;
+  vat_active?: boolean;
+  vat_rate?: number;
+  tax_rate_id?: number;
+  with_signature?: boolean;
+  signature_remark?: string;
 }

@@ -11,11 +11,12 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import { MilkeeApi, TagColor, AccountType } from './api.js';
+import { MilkeeApi, TagColor, AccountType, InvoiceStatus, ProposalStatus } from './api.js';
 
 // Get configuration from environment variables
 const API_TOKEN = process.env.MILKEE_API_TOKEN;
 const COMPANY_ID = process.env.MILKEE_COMPANY_ID;
+const READ_ONLY = process.env.MILKEE_READ_ONLY === 'true';
 
 if (!API_TOKEN || !COMPANY_ID) {
   console.error('Error: MILKEE_API_TOKEN and MILKEE_COMPANY_ID environment variables are required');
@@ -24,13 +25,33 @@ if (!API_TOKEN || !COMPANY_ID) {
 
 const api = new MilkeeApi({ apiToken: API_TOKEN, companyId: COMPANY_ID });
 
+// Read-only mode only exposes list/get tools for safe analysis
+const isReadOnlyTool = (name: string): boolean => {
+  return name.includes('_list_') ||
+         name.includes('_get_') ||
+         name === 'milkee_get_customer_statistics' ||
+         name === 'milkee_get_timer' ||
+         name === 'milkee_get_tag_colors' ||
+         name === 'milkee_get_next_entry_number';
+};
+
 // ==================== TOOL DEFINITIONS ====================
 
 const tools: Tool[] = [
+  // ==================== COMPANY (YOUR BUSINESS) ====================
+  {
+    name: 'milkee_get_company_summary',
+    description: 'Get a summary of YOUR business (the company using Milkee). Returns total invoices, proposals, revenue, expenses, and cash position. Use this for "how is my business doing" or "financial overview" questions - NOT for customer statistics.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
   // ==================== CUSTOMERS ====================
   {
     name: 'milkee_list_customers',
-    description: 'List all customers with optional filtering and pagination',
+    description: 'List all customers (Kunden) - these are YOUR CLIENTS that you bill. Do NOT confuse customers with the company itself.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -110,7 +131,7 @@ const tools: Tool[] = [
   },
   {
     name: 'milkee_get_customer_statistics',
-    description: 'Get financial statistics for a customer (income, expenses, hours, etc.)',
+    description: 'Get financial statistics for a SPECIFIC CUSTOMER (someone you bill). Returns income from that customer, expenses attributed to them, and hours tracked. For YOUR BUSINESS overall stats, use milkee_get_company_summary instead.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -407,7 +428,7 @@ const tools: Tool[] = [
   // ==================== ENTRIES (BOOKKEEPING) ====================
   {
     name: 'milkee_list_entries',
-    description: 'List bookkeeping entries with optional filtering',
+    description: 'List bookkeeping entries (Buchungen) - the core accounting ledger. This contains all income, expenses, and transfer transactions.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -811,23 +832,337 @@ const tools: Tool[] = [
       required: ['customer_id', 'contact_id'],
     },
   },
+
+  // ==================== INVOICES ====================
+  {
+    name: 'milkee_list_invoices',
+    description: 'List all invoices (Rechnungen) with optional filtering. MILKEE is primarily an accounting tool - invoices are core to the business.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        page: { type: 'number', description: 'Page number' },
+        per_page: { type: 'number', description: 'Items per page (max: 100)' },
+        status: { type: 'string', enum: ['draft', 'sent', 'paid', 'overdue', 'cancelled'], description: 'Filter by status' },
+        customer_id: { type: 'number', description: 'Filter by customer ID' },
+        project_id: { type: 'number', description: 'Filter by project ID' },
+        date: { type: 'string', description: 'Filter by date (YYYY-MM-DD or range)' },
+        overdue: { type: 'boolean', description: 'Filter overdue invoices only' },
+        include: { type: 'string', description: 'Include relations: customer, contact, project' },
+        sort: { type: 'string', description: 'Sort field (e.g., date, number, -date for descending)' },
+      },
+    },
+  },
+  {
+    name: 'milkee_get_invoice',
+    description: 'Get details of a specific invoice including line items, customer, and payment status',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Invoice ID' },
+        include: { type: 'string', description: 'Include relations: customer, contact, project' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'milkee_create_invoice',
+    description: 'Create a new invoice (Rechnung) for a customer',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        customer_id: { type: 'number', description: 'Customer ID (required)' },
+        title: { type: 'string', description: 'Invoice title (required)' },
+        date: { type: 'string', description: 'Invoice date YYYY-MM-DD (required)' },
+        payable_until: { type: 'string', description: 'Payment due date YYYY-MM-DD (required)' },
+        positions: { type: 'string', description: 'JSON array of line items: [{description, amount, price, unit}] (required)' },
+        contact_id: { type: 'number', description: 'Contact person ID' },
+        project_id: { type: 'number', description: 'Project ID' },
+        lang: { type: 'string', description: 'Language code (de, en, fr, it)' },
+        remarks_top: { type: 'string', description: 'Remarks shown above positions' },
+        remarks: { type: 'string', description: 'Remarks shown below positions' },
+        currency: { type: 'string', description: 'Currency code (default: CHF)' },
+        vat_active: { type: 'boolean', description: 'Enable VAT calculation' },
+        vat_rate: { type: 'number', description: 'VAT rate percentage' },
+        tax_rate_id: { type: 'number', description: 'Tax rate ID' },
+      },
+      required: ['customer_id', 'title', 'date', 'payable_until', 'positions'],
+    },
+  },
+  {
+    name: 'milkee_update_invoice',
+    description: 'Update an existing invoice',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Invoice ID' },
+        title: { type: 'string', description: 'Invoice title' },
+        date: { type: 'string', description: 'Invoice date YYYY-MM-DD' },
+        payable_until: { type: 'string', description: 'Payment due date YYYY-MM-DD' },
+        positions: { type: 'string', description: 'JSON array of line items' },
+        status: { type: 'string', enum: ['draft', 'sent', 'paid', 'overdue', 'cancelled'], description: 'Invoice status' },
+        remarks_top: { type: 'string', description: 'Remarks shown above positions' },
+        remarks: { type: 'string', description: 'Remarks shown below positions' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'milkee_delete_invoice',
+    description: 'Delete an invoice (only draft invoices can be deleted)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Invoice ID' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'milkee_mark_invoice_paid',
+    description: 'Mark an invoice as paid',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Invoice ID' },
+        payment_date: { type: 'string', description: 'Payment date YYYY-MM-DD (defaults to today)' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'milkee_send_invoice',
+    description: 'Send an invoice via email to the customer',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Invoice ID' },
+        email: { type: 'string', description: 'Override recipient email (optional)' },
+      },
+      required: ['id'],
+    },
+  },
+
+  // ==================== PROPOSALS (OFFERS/QUOTES) ====================
+  {
+    name: 'milkee_list_proposals',
+    description: 'List all proposals/offers/quotes (Offerten) with optional filtering',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        page: { type: 'number', description: 'Page number' },
+        per_page: { type: 'number', description: 'Items per page (max: 100)' },
+        status: { type: 'string', enum: ['draft', 'sent', 'accepted', 'declined', 'expired'], description: 'Filter by status' },
+        customer_id: { type: 'number', description: 'Filter by customer ID' },
+        project_id: { type: 'number', description: 'Filter by project ID' },
+        date: { type: 'string', description: 'Filter by date (YYYY-MM-DD or range)' },
+        include: { type: 'string', description: 'Include relations: customer, contact, project' },
+        sort: { type: 'string', description: 'Sort field (e.g., date, number, -date for descending)' },
+      },
+    },
+  },
+  {
+    name: 'milkee_get_proposal',
+    description: 'Get details of a specific proposal/offer/quote',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Proposal ID' },
+        include: { type: 'string', description: 'Include relations: customer, contact, project' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'milkee_create_proposal',
+    description: 'Create a new proposal/offer/quote (Offerte) for a customer',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        customer_id: { type: 'number', description: 'Customer ID (required)' },
+        title: { type: 'string', description: 'Proposal title (required)' },
+        date: { type: 'string', description: 'Proposal date YYYY-MM-DD (required)' },
+        valid_until: { type: 'string', description: 'Validity date YYYY-MM-DD (required)' },
+        positions: { type: 'string', description: 'JSON array of line items: [{description, amount, price, unit}] (required)' },
+        contact_id: { type: 'number', description: 'Contact person ID' },
+        project_id: { type: 'number', description: 'Project ID' },
+        lang: { type: 'string', description: 'Language code (de, en, fr, it)' },
+        remarks_top: { type: 'string', description: 'Remarks shown above positions' },
+        remarks: { type: 'string', description: 'Remarks shown below positions' },
+        currency: { type: 'string', description: 'Currency code (default: CHF)' },
+        vat_active: { type: 'boolean', description: 'Enable VAT calculation' },
+        vat_rate: { type: 'number', description: 'VAT rate percentage' },
+        with_signature: { type: 'boolean', description: 'Include signature field' },
+      },
+      required: ['customer_id', 'title', 'date', 'valid_until', 'positions'],
+    },
+  },
+  {
+    name: 'milkee_update_proposal',
+    description: 'Update an existing proposal/offer/quote',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Proposal ID' },
+        title: { type: 'string', description: 'Proposal title' },
+        date: { type: 'string', description: 'Proposal date YYYY-MM-DD' },
+        valid_until: { type: 'string', description: 'Validity date YYYY-MM-DD' },
+        positions: { type: 'string', description: 'JSON array of line items' },
+        status: { type: 'string', enum: ['draft', 'sent', 'accepted', 'declined', 'expired'], description: 'Proposal status' },
+        remarks_top: { type: 'string', description: 'Remarks shown above positions' },
+        remarks: { type: 'string', description: 'Remarks shown below positions' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'milkee_delete_proposal',
+    description: 'Delete a proposal/offer/quote',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Proposal ID' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'milkee_convert_proposal_to_invoice',
+    description: 'Convert an accepted proposal/offer into an invoice',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Proposal ID' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'milkee_send_proposal',
+    description: 'Send a proposal/offer via email to the customer',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: 'Proposal ID' },
+        email: { type: 'string', description: 'Override recipient email (optional)' },
+      },
+      required: ['id'],
+    },
+  },
 ];
 
 // ==================== TOOL HANDLERS ====================
 
 async function handleToolCall(name: string, args: Record<string, unknown>): Promise<string> {
+  // Safety check: reject write operations in read-only mode
+  if (READ_ONLY && !isReadOnlyTool(name)) {
+    return JSON.stringify({
+      error: 'This operation is not available in read-only mode. Set MILKEE_READ_ONLY=false to enable write operations.'
+    });
+  }
+
   try {
     switch (name) {
+      // Company Summary (Your Business)
+      case 'milkee_get_company_summary': {
+        // Fetch data from multiple endpoints to build a summary
+        const [invoices, proposals, incomeEntries, expenseEntries, accounts] = await Promise.all([
+          api.listInvoices({ per_page: 100 }),
+          api.listProposals({ per_page: 100 }),
+          api.listEntries({ 'filter[type]': 'income', per_page: 100 }),
+          api.listEntries({ 'filter[type]': 'expense', per_page: 100 }),
+          api.listAccounts({}),
+        ]);
+
+        // Calculate invoice stats
+        const invoiceStats = {
+          total: invoices.data?.length || 0,
+          draft: invoices.data?.filter((i: any) => i.status === 'draft').length || 0,
+          sent: invoices.data?.filter((i: any) => i.status === 'sent').length || 0,
+          paid: invoices.data?.filter((i: any) => i.status === 'paid').length || 0,
+          overdue: invoices.data?.filter((i: any) => i.overdue).length || 0,
+          total_value: invoices.data?.reduce((sum: number, i: any) => sum + (i.final_value || 0), 0) || 0,
+          open_value: invoices.data?.filter((i: any) => i.status === 'sent').reduce((sum: number, i: any) => sum + (i.final_value || 0), 0) || 0,
+          paid_value: invoices.data?.filter((i: any) => i.status === 'paid').reduce((sum: number, i: any) => sum + (i.final_value || 0), 0) || 0,
+        };
+
+        // Calculate proposal stats
+        const proposalStats = {
+          total: proposals.data?.length || 0,
+          draft: proposals.data?.filter((p: any) => p.status === 'draft').length || 0,
+          sent: proposals.data?.filter((p: any) => p.status === 'sent').length || 0,
+          accepted: proposals.data?.filter((p: any) => p.status === 'accepted').length || 0,
+          declined: proposals.data?.filter((p: any) => p.status === 'declined').length || 0,
+          total_value: proposals.data?.reduce((sum: number, p: any) => sum + (p.final_value || 0), 0) || 0,
+        };
+
+        // Calculate entry stats
+        const totalIncome = incomeEntries.data?.reduce((sum: number, e: any) => sum + (e.sum || 0), 0) || 0;
+        const totalExpenses = expenseEntries.data?.reduce((sum: number, e: any) => sum + (e.sum || 0), 0) || 0;
+
+        // Find bank account balance
+        const bankAccount = (accounts as any)?.find?.((a: any) => a.name === 'Bank' || a.number === 1020);
+        const bankBalance = bankAccount?.balance || 0;
+
+        const summary = {
+          company_note: "This is YOUR business summary - the company using Milkee, not a customer.",
+          invoices: {
+            count: invoiceStats.total,
+            by_status: {
+              draft: invoiceStats.draft,
+              sent_pending: invoiceStats.sent,
+              paid: invoiceStats.paid,
+              overdue: invoiceStats.overdue,
+            },
+            total_invoiced: `CHF ${invoiceStats.total_value.toLocaleString('de-CH', { minimumFractionDigits: 2 })}`,
+            outstanding: `CHF ${invoiceStats.open_value.toLocaleString('de-CH', { minimumFractionDigits: 2 })}`,
+            collected: `CHF ${invoiceStats.paid_value.toLocaleString('de-CH', { minimumFractionDigits: 2 })}`,
+          },
+          proposals: {
+            count: proposalStats.total,
+            by_status: {
+              draft: proposalStats.draft,
+              sent: proposalStats.sent,
+              accepted: proposalStats.accepted,
+              declined: proposalStats.declined,
+            },
+            total_value: `CHF ${proposalStats.total_value.toLocaleString('de-CH', { minimumFractionDigits: 2 })}`,
+          },
+          bookkeeping: {
+            total_income: `CHF ${totalIncome.toLocaleString('de-CH', { minimumFractionDigits: 2 })}`,
+            total_expenses: `CHF ${totalExpenses.toLocaleString('de-CH', { minimumFractionDigits: 2 })}`,
+            net_profit: `CHF ${(totalIncome - totalExpenses).toLocaleString('de-CH', { minimumFractionDigits: 2 })}`,
+            profit_margin: totalIncome > 0 ? `${((totalIncome - totalExpenses) / totalIncome * 100).toFixed(1)}%` : 'N/A',
+          },
+          cash_position: {
+            bank_balance: `CHF ${bankBalance.toLocaleString('de-CH', { minimumFractionDigits: 2 })}`,
+          },
+        };
+
+        return JSON.stringify(summary, null, 2);
+      }
+
       // Customers
       case 'milkee_list_customers': {
         const result = await api.listCustomers({
           page: args.page as number,
-          per_page: args.per_page as number,
+          per_page: args.per_page as number || 50, // Default limit
           'filter[name]': args.name as string,
           'filter[archived]': args.archived as boolean,
           include: args.include as string,
         });
-        return JSON.stringify(result, null, 2);
+        // Slim down response for list view
+        const slimData = result.data?.map((cust: any) => ({
+          id: cust.id,
+          name: cust.name,
+          email: cust.email,
+          phone: cust.phone,
+          city: cust.city,
+          archived: cust.archived,
+          open_invoice_sum: cust.open_invoice_sum,
+          open_expenses_sum: cust.open_expenses_sum?.formatted,
+          open_times_sum: cust.open_times_sum?.readable,
+        }));
+        return JSON.stringify({ ...result, data: slimData }, null, 2);
       }
       case 'milkee_get_customer': {
         const result = await api.getCustomer(args.id as number, args.include as string);
@@ -974,7 +1309,7 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
       case 'milkee_list_entries': {
         const result = await api.listEntries({
           page: args.page as number,
-          per_page: args.per_page as number,
+          per_page: args.per_page as number || 50, // Default limit
           'filter[date]': args.date as string,
           'filter[type]': args.type as any,
           'filter[customer_id]': args.customer_id as number,
@@ -985,7 +1320,26 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
           sort: args.sort as string,
           include: args.include as string,
         });
-        return JSON.stringify(result, null, 2);
+        // Slim down response for list view
+        const slimData = result.data?.map((entry: any) => ({
+          id: entry.id,
+          number: entry.number,
+          type: entry.type,
+          date: entry.date,
+          description: entry.description,
+          sum: entry.sum,
+          sum_formatted: entry.sum_formatted,
+          debit_account_id: entry.debit_account_id,
+          debit_account_name: entry.debit_account?.name,
+          credit_account_id: entry.credit_account_id,
+          credit_account_name: entry.credit_account?.name,
+          customer_id: entry.customer_id,
+          customer_name: entry.customer?.name,
+          project_id: entry.project_id,
+          billable: entry.billable,
+          locked: entry.locked,
+        }));
+        return JSON.stringify({ ...result, data: slimData }, null, 2);
       }
       case 'milkee_get_entry': {
         const result = await api.getEntry(args.id as number, args.include as string);
@@ -1131,6 +1485,122 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
         return JSON.stringify({ success: true, message: 'Contact deleted' });
       }
 
+      // Invoices
+      case 'milkee_list_invoices': {
+        const result = await api.listInvoices({
+          page: args.page as number,
+          per_page: args.per_page as number || 25, // Default limit to avoid huge responses
+          'filter[status]': args.status as any,
+          'filter[customer_id]': args.customer_id as number,
+          'filter[project_id]': args.project_id as number,
+          'filter[date]': args.date as string,
+          'filter[overdue]': args.overdue as boolean,
+          include: args.include as string,
+          sort: args.sort as string,
+        });
+        // Slim down response - remove verbose fields for list view
+        const slimData = result.data?.map((inv: any) => ({
+          id: inv.id,
+          number: inv.number,
+          title: inv.title,
+          date: inv.date,
+          payable_until: inv.payable_until,
+          status: inv.status,
+          currency: inv.currency,
+          total_value: inv.total_value,
+          final_value: inv.final_value,
+          final_value_formatted: inv.final_value_formatted,
+          overdue: inv.overdue,
+          open_total: inv.open_total,
+          customer_id: inv.customer_id,
+          customer_name: inv.customer?.name,
+          project_id: inv.project_id,
+        }));
+        return JSON.stringify({ ...result, data: slimData }, null, 2);
+      }
+      case 'milkee_get_invoice': {
+        const result = await api.getInvoice(args.id as number, args.include as string);
+        return JSON.stringify(result, null, 2);
+      }
+      case 'milkee_create_invoice': {
+        const result = await api.createInvoice(args as any);
+        return JSON.stringify(result, null, 2);
+      }
+      case 'milkee_update_invoice': {
+        const { id, ...data } = args;
+        const result = await api.updateInvoice(id as number, data as any);
+        return JSON.stringify(result, null, 2);
+      }
+      case 'milkee_delete_invoice': {
+        await api.deleteInvoice(args.id as number);
+        return JSON.stringify({ success: true, message: 'Invoice deleted' });
+      }
+      case 'milkee_mark_invoice_paid': {
+        const result = await api.markInvoicePaid(args.id as number, args.payment_date as string);
+        return JSON.stringify(result, null, 2);
+      }
+      case 'milkee_send_invoice': {
+        const result = await api.sendInvoice(args.id as number, args.email as string);
+        return JSON.stringify(result, null, 2);
+      }
+
+      // Proposals
+      case 'milkee_list_proposals': {
+        const result = await api.listProposals({
+          page: args.page as number,
+          per_page: args.per_page as number || 25, // Default limit
+          'filter[status]': args.status as any,
+          'filter[customer_id]': args.customer_id as number,
+          'filter[project_id]': args.project_id as number,
+          'filter[date]': args.date as string,
+          include: args.include as string,
+          sort: args.sort as string,
+        });
+        // Slim down response for list view
+        const slimData = result.data?.map((prop: any) => ({
+          id: prop.id,
+          number: prop.number,
+          title: prop.title,
+          date: prop.date,
+          valid_until: prop.valid_until,
+          status: prop.status,
+          currency: prop.currency,
+          total_value: prop.total_value,
+          final_value: prop.final_value,
+          final_value_formatted: prop.final_value_formatted,
+          customer_id: prop.customer_id,
+          customer_name: prop.customer?.name,
+          project_id: prop.project_id,
+          invoice_id: prop.invoice_id, // If converted
+        }));
+        return JSON.stringify({ ...result, data: slimData }, null, 2);
+      }
+      case 'milkee_get_proposal': {
+        const result = await api.getProposal(args.id as number, args.include as string);
+        return JSON.stringify(result, null, 2);
+      }
+      case 'milkee_create_proposal': {
+        const result = await api.createProposal(args as any);
+        return JSON.stringify(result, null, 2);
+      }
+      case 'milkee_update_proposal': {
+        const { id, ...data } = args;
+        const result = await api.updateProposal(id as number, data as any);
+        return JSON.stringify(result, null, 2);
+      }
+      case 'milkee_delete_proposal': {
+        await api.deleteProposal(args.id as number);
+        return JSON.stringify({ success: true, message: 'Proposal deleted' });
+      }
+      case 'milkee_convert_proposal_to_invoice': {
+        const result = await api.convertProposalToInvoice(args.id as number);
+        return JSON.stringify(result, null, 2);
+      }
+      case 'milkee_send_proposal': {
+        const result = await api.sendProposal(args.id as number, args.email as string);
+        return JSON.stringify(result, null, 2);
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -1155,7 +1625,7 @@ const server = new Server(
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools,
+  tools: READ_ONLY ? tools.filter(t => isReadOnlyTool(t.name)) : tools,
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -1169,7 +1639,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('MILKEE MCP server running on stdio');
+  const mode = READ_ONLY ? 'READ-ONLY (analysis only)' : 'FULL ACCESS';
+  const toolCount = READ_ONLY ? tools.filter(t => isReadOnlyTool(t.name)).length : tools.length;
+  console.error(`MILKEE MCP server running on stdio [${mode}] - ${toolCount} tools available`);
 }
 
 main().catch((error) => {

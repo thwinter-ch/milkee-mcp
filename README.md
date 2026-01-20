@@ -1,23 +1,26 @@
 # MILKEE MCP Server
 
-Give Claude AI direct access to your [MILKEE](https://milkee.ch) accounting data - customers, time tracking, invoices, bookkeeping, and more.
+Give Claude AI direct access to your [MILKEE](https://milkee.ch) Swiss accounting software - invoices, proposals, bookkeeping, customers, and more.
 
 > **Note:** This is an unofficial community project, not an official MILKEE product.
 
-> **Installation:** Skip the `npm i milkee-mcp` command shown above - that's for developers. MCP users just need to add the config below to Claude. [Jump to Quick Start](#quick-start)
+## What is MILKEE?
 
-## What is this?
+[MILKEE](https://milkee.ch) is Swiss accounting software for freelancers and small businesses. Its core features are:
 
-[MILKEE](https://milkee.ch) is Swiss accounting software for freelancers and small businesses.
+1. **Invoicing** (Rechnungen) - Create and send QR invoices
+2. **Proposals/Quotes** (Offerten) - Send offers, convert to invoices
+3. **Bookkeeping** (Buchhaltung) - Double-entry accounting, VAT, financial statements
+4. **Time Tracking** (Zeiterfassung) - Track hours, bill to clients
+5. **Customer Management** (Kunden) - Contacts, projects, billing history
 
-This MCP server connects Claude (Anthropic's AI) to your MILKEE account, so you can:
+This MCP server connects Claude to your MILKEE account so you can:
 
-- "Show me my customers"
-- "Start a timer for project X"
-- "What did I earn last month?"
-- "Create an expense entry for CHF 50"
-
-**What's MCP?** [Model Context Protocol](https://modelcontextprotocol.io) is a standard that lets AI assistants like Claude connect to external tools and data sources.
+- "Show me all unpaid invoices"
+- "What's my revenue this month?"
+- "List proposals that are still pending"
+- "Create an invoice for customer X"
+- "How much did I bill customer Y last year?"
 
 ---
 
@@ -43,7 +46,7 @@ Add this to your `mcpServers`:
   "mcpServers": {
     "milkee": {
       "command": "npx",
-      "args": ["-y", "milkee-mcp"],
+      "args": ["-y", "milkee-mcp@latest"],
       "env": {
         "MILKEE_API_TOKEN": "your-api-token-here",
         "MILKEE_COMPANY_ID": "your-company-id-here"
@@ -53,52 +56,142 @@ Add this to your `mcpServers`:
 }
 ```
 
+> **Important:** Use `milkee-mcp@latest` to always get the newest version.
+
 ### 3. Restart Claude Desktop
 
-That's it! Ask Claude something like "List my MILKEE customers" to test.
+That's it! Ask Claude something like "List my MILKEE invoices" to test.
+
+---
+
+## Read-Only Mode (Recommended for Analysis)
+
+If you only want Claude to **read and analyze** your data without making changes, enable read-only mode:
+
+```json
+{
+  "mcpServers": {
+    "milkee": {
+      "command": "npx",
+      "args": ["-y", "milkee-mcp@latest"],
+      "env": {
+        "MILKEE_API_TOKEN": "your-api-token-here",
+        "MILKEE_COMPANY_ID": "your-company-id-here",
+        "MILKEE_READ_ONLY": "true"
+      }
+    }
+  }
+}
+```
+
+**Read-only mode:**
+- Only exposes `list` and `get` tools
+- Cannot create, update, delete, or send anything
+- Perfect for financial analysis and reporting
+- Protects against accidental modifications
 
 ---
 
 ## Usage with Claude Code (CLI)
 
-Add to your Claude Code config or run:
-
 ```bash
-claude mcp add milkee -- npx -y milkee-mcp
+claude mcp add milkee -- npx -y milkee-mcp@latest
 ```
 
 Then set environment variables `MILKEE_API_TOKEN` and `MILKEE_COMPANY_ID`.
 
 ---
 
+## Understanding Your Data
+
+**Important distinction:**
+
+| Term | Meaning | Example |
+|------|---------|---------|
+| **Company** | YOUR business (the MILKEE account holder) | "Tafelwart GmbH" |
+| **Customer** | People/businesses you bill | "Acme Corp", "John Smith" |
+
+When asking Claude about your business:
+- "How is **my business** doing?" → Uses `milkee_get_company_summary`
+- "What's **my** revenue?" → Your company's revenue
+- "Show **customer** statistics for Acme" → Stats about someone you bill
+
+The `milkee_get_company_summary` tool provides YOUR business overview (invoices, revenue, expenses, profit, cash position). Customer tools (`milkee_get_customer_statistics`) show data about people you invoice.
+
+---
+
 ## What Can It Do?
+
+### Core Accounting (Primary Use)
 
 | Category | Capabilities |
 |----------|--------------|
-| **Customers** | List, create, update, delete customers. View financial statistics per customer. |
-| **Projects** | Manage projects, track budgets, bulk archive/unarchive. |
-| **Time Tracking** | Log time entries, start/stop timer, view hours by project. |
-| **Bookkeeping** | Create income/expense entries, manage accounts, handle VAT. |
-| **Products** | Manage your product/service catalog. |
-| **Tags** | Organize with color-coded labels. |
-| **Tasks** | Track project tasks with status (open/in-progress/done). |
-| **Contacts** | Manage contacts per customer. |
+| **Invoices** | List, create, update, delete, mark paid, send via email |
+| **Proposals** | List, create, update, delete, send, convert to invoice |
+| **Bookkeeping** | Income/expense entries, accounts, ledger transactions |
+| **Customers** | Full customer management with financial statistics |
+
+### Additional Features
+
+| Category | Capabilities |
+|----------|--------------|
+| **Projects** | Track projects, budgets, link to customers |
+| **Time Tracking** | Log hours, timer, billable tracking |
+| **Products** | Product/service catalog for invoices |
+| **Tags** | Color-coded labels for organization |
+| **Tasks** | Project task management |
 
 ### Example Prompts
 
-- "Show all my active projects"
-- "How many hours did I track this week?"
-- "Start a timer for the Acme Corp project"
-- "Create a new customer called Example AG in Zurich"
-- "List all expenses tagged as 'office'"
-- "What's my income this month?"
+**Business Overview:**
+- "How is my business doing?"
+- "Give me a financial summary"
+- "What's my profit this year?"
+- "Show me my cash position"
+
+**Financial Analysis:**
+- "Show me all unpaid invoices"
+- "What's my total revenue this year?"
+- "List expenses for last month"
+- "Which customers have overdue invoices?"
+
+**Invoicing:**
+- "Create an invoice for Acme Corp for 10 hours at CHF 150/hour"
+- "Mark invoice #2024001 as paid"
+- "Send the latest invoice to the customer"
+
+**Proposals:**
+- "List all pending proposals"
+- "Convert proposal #250003 to an invoice"
+- "What proposals are expiring this week?"
 
 ---
 
 ## All Available Tools
 
 <details>
-<summary>Click to expand full tool list (50+ tools)</summary>
+<summary>Click to expand full tool list (71 tools)</summary>
+
+### Company (Your Business)
+- `milkee_get_company_summary` - Get YOUR business overview (revenue, expenses, profit, cash)
+
+### Invoices (Rechnungen)
+- `milkee_list_invoices` - List invoices with filtering
+- `milkee_get_invoice` - Get invoice details
+- `milkee_create_invoice` - Create new invoice
+- `milkee_update_invoice` - Update invoice
+- `milkee_delete_invoice` - Delete draft invoice
+- `milkee_mark_invoice_paid` - Mark as paid
+- `milkee_send_invoice` - Send via email
+
+### Proposals (Offerten)
+- `milkee_list_proposals` - List proposals/quotes
+- `milkee_get_proposal` - Get proposal details
+- `milkee_create_proposal` - Create new proposal
+- `milkee_update_proposal` - Update proposal
+- `milkee_delete_proposal` - Delete proposal
+- `milkee_convert_proposal_to_invoice` - Convert to invoice
+- `milkee_send_proposal` - Send via email
 
 ### Customers
 - `milkee_list_customers` - List customers with filtering
@@ -107,6 +200,15 @@ Then set environment variables `MILKEE_API_TOKEN` and `MILKEE_COMPANY_ID`.
 - `milkee_update_customer` - Update customer
 - `milkee_delete_customer` - Delete customer
 - `milkee_get_customer_statistics` - Get financial stats
+
+### Bookkeeping (Buchungen)
+- `milkee_list_entries` - List ledger entries
+- `milkee_get_entry` - Get entry details
+- `milkee_create_entry` - Create entry
+- `milkee_update_entry` - Update entry
+- `milkee_delete_entry` - Delete entry
+- `milkee_get_next_entry_number` - Get next booking number
+- `milkee_bulk_delete_entries` - Delete multiple entries
 
 ### Projects
 - `milkee_list_projects` - List projects
@@ -134,15 +236,6 @@ Then set environment variables `MILKEE_API_TOKEN` and `MILKEE_COMPANY_ID`.
 - `milkee_stop_timer` - Stop timer (creates entry)
 - `milkee_update_timer_description` - Update timer description
 - `milkee_discard_timer` - Discard timer
-
-### Bookkeeping
-- `milkee_list_entries` - List bookkeeping entries
-- `milkee_get_entry` - Get entry details
-- `milkee_create_entry` - Create entry
-- `milkee_update_entry` - Update entry
-- `milkee_delete_entry` - Delete entry
-- `milkee_get_next_entry_number` - Get next booking number
-- `milkee_bulk_delete_entries` - Delete multiple entries
 
 ### Products
 - `milkee_list_products` - List products
@@ -183,7 +276,8 @@ Then set environment variables `MILKEE_API_TOKEN` and `MILKEE_COMPANY_ID`.
 ## Security
 
 - Your API token stays on your machine (in Claude's config file)
-- This MCP runs locally - your credentials are never sent anywhere except directly to MILKEE's API
+- This MCP runs locally - credentials are never sent anywhere except directly to MILKEE's API
+- Use **read-only mode** for analysis to prevent accidental modifications
 - The source code is fully open: [GitHub](https://github.com/thwinter-ch/milkee-mcp)
 
 ---
@@ -198,6 +292,37 @@ Then set environment variables `MILKEE_API_TOKEN` and `MILKEE_COMPANY_ID`.
 
 **API errors**
 → Verify your API token is valid and hasn't expired in MILKEE settings.
+
+**Getting stale version**
+→ Make sure you're using `milkee-mcp@latest` in your config, not just `milkee-mcp`.
+
+---
+
+## Testing
+
+### Test Basic Connection
+Ask Claude: "List my MILKEE customers" - should return customer names.
+
+### Test Company Summary
+Ask Claude: "How is my business doing?" or "Give me a company overview" - should return your business stats (invoices, revenue, expenses, profit).
+
+### Test Read-Only Mode
+1. Set `MILKEE_READ_ONLY=true` in your config
+2. Restart Claude Desktop
+3. Ask Claude: "Create a test customer called Test123"
+4. Claude should say it can't create/modify data in read-only mode
+
+### Test Checklist
+
+| Test | Prompt | Expected |
+|------|--------|----------|
+| List invoices | "Show my invoices" | Invoice list with numbers, dates, amounts |
+| Company stats | "What's my profit?" | Revenue, expenses, net profit |
+| Customer stats | "Statistics for [customer name]" | That customer's billing history |
+| Invoice details | "Show invoice #[number]" | Full invoice with line items |
+| List proposals | "Show pending proposals" | Proposal list |
+| Time entries | "What hours did I log this week?" | Time entries |
+| Read-only block | "Create a customer" (with read-only) | Should be blocked |
 
 ---
 
@@ -216,6 +341,40 @@ Run locally:
 ```bash
 MILKEE_API_TOKEN=xxx MILKEE_COMPANY_ID=123 node dist/index.js
 ```
+
+For local development with Claude Desktop, point to your local build:
+```json
+{
+  "mcpServers": {
+    "milkee": {
+      "command": "node",
+      "args": ["/path/to/milkee-mcp/dist/index.js"],
+      "env": {
+        "MILKEE_API_TOKEN": "your-token",
+        "MILKEE_COMPANY_ID": "your-id"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Changelog
+
+### 1.2.0
+- **Added:** `milkee_get_company_summary` - Get YOUR business overview (invoices, revenue, expenses, profit, cash position)
+- **Fixed:** Response size optimization - list endpoints now return slim data (96% smaller responses)
+- **Improved:** Tool descriptions to clarify company vs customer (your business vs people you bill)
+
+### 1.1.0
+- **Added:** Invoice tools (list, get, create, update, delete, mark paid, send)
+- **Added:** Proposal tools (list, get, create, update, delete, convert to invoice, send)
+- **Added:** Read-only mode (`MILKEE_READ_ONLY=true`) for safe analysis
+- **Improved:** Tool descriptions with better accounting context
+
+### 1.0.x
+- Initial release with customers, projects, time tracking, bookkeeping, products, tags, tasks
 
 ---
 
