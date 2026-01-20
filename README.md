@@ -151,12 +151,11 @@ Billing history and revenue for a specific customer you invoice.
 
 ### Claude Desktop
 
-Find your config file:
+Config file location:
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-Add to `mcpServers`:
-
+**Full access:**
 ```json
 {
   "mcpServers": {
@@ -172,7 +171,24 @@ Add to `mcpServers`:
 }
 ```
 
-Restart Claude Desktop. Test with: "List my MILKEE invoices"
+**Read-only** (for analysis only - no create/update/delete):
+```json
+{
+  "mcpServers": {
+    "milkee": {
+      "command": "npx",
+      "args": ["-y", "milkee-mcp@latest"],
+      "env": {
+        "MILKEE_API_TOKEN": "your-api-token-here",
+        "MILKEE_COMPANY_ID": "your-company-id-here",
+        "MILKEE_READ_ONLY": "true"
+      }
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving. Test with: "List my MILKEE invoices"
 
 ### Claude Code (CLI)
 
@@ -181,22 +197,9 @@ Restart Claude Desktop. Test with: "List my MILKEE invoices"
 claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-id -- npx -y milkee-mcp@latest
 ```
 
-**Read-only** (recommended for analysis):
+**Read-only:**
 ```bash
-claude mcp add milkee-readonly -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-id -e MILKEE_READ_ONLY=true -- npx -y milkee-mcp@latest
-```
-
-### Read-Only Mode
-
-Add `MILKEE_READ_ONLY=true` to only expose list/get tools - no create, update, delete, or send. Recommended for financial analysis.
-
-**Claude Desktop:**
-```json
-"env": {
-  "MILKEE_API_TOKEN": "your-token",
-  "MILKEE_COMPANY_ID": "your-id",
-  "MILKEE_READ_ONLY": "true"
-}
+claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-id -e MILKEE_READ_ONLY=true -- npx -y milkee-mcp@latest
 ```
 
 ---
