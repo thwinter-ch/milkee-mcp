@@ -1,65 +1,100 @@
 # MILKEE MCP Server
 
-MCP (Model Context Protocol) server for [MILKEE](https://milkee.ch) - Swiss accounting software for freelancers and small businesses.
+Give Claude AI direct access to your [MILKEE](https://milkee.ch) accounting data - customers, time tracking, invoices, bookkeeping, and more.
 
-## Features
+## What is this?
 
-This MCP server provides full access to the MILKEE API:
+[MILKEE](https://milkee.ch) is Swiss accounting software for freelancers and small businesses.
 
-- **Customers** - CRUD operations, statistics, contacts management
-- **Projects** - CRUD, bulk archive/unarchive
-- **Tasks** - CRUD with status tracking
-- **Time Tracking** - CRUD, timer start/stop/discard
-- **Bookkeeping Entries** - CRUD, bulk operations, entry numbering
-- **Products** - CRUD for product catalog
-- **Accounts** - Manage chart of accounts (bank, income, expense, etc.)
-- **Tags** - Color-coded labels for organization
-- **Tax Rates** - Swiss VAT rate management
-- **Contacts** - Customer contact management
+This MCP server connects Claude (Anthropic's AI) to your MILKEE account, so you can:
 
-## Installation
+- "Show me my customers"
+- "Start a timer for project X"
+- "What did I earn last month?"
+- "Create an expense entry for CHF 50"
 
-```bash
-npm install
-npm run build
-```
+**What's MCP?** [Model Context Protocol](https://modelcontextprotocol.io) is a standard that lets AI assistants like Claude connect to external tools and data sources.
 
-## Configuration
+---
 
-The server requires two environment variables:
+## Quick Start
 
-| Variable | Description |
-|----------|-------------|
-| `MILKEE_API_TOKEN` | Your MILKEE API token (generate in MILKEE settings) |
-| `MILKEE_COMPANY_ID` | Your MILKEE company ID |
-
-### Getting Your API Token
+### 1. Get Your MILKEE Credentials
 
 1. Log in to [MILKEE](https://app.milkee.ch)
-2. Go to Settings > API
+2. Go to **Settings > API**
 3. Generate a new API token
-4. Copy your company ID from the URL or settings
+4. Note your **Company ID** from the URL (e.g., `app.milkee.ch/companies/1234/...` → ID is `1234`)
 
-## Usage with Claude Desktop
+### 2. Add to Claude Desktop
 
-Add to your `claude_desktop_config.json`:
+Find your config file:
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+Add this to your `mcpServers`:
 
 ```json
 {
   "mcpServers": {
     "milkee": {
-      "command": "node",
-      "args": ["path/to/milkee-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "milkee-mcp"],
       "env": {
-        "MILKEE_API_TOKEN": "your-api-token",
-        "MILKEE_COMPANY_ID": "your-company-id"
+        "MILKEE_API_TOKEN": "your-api-token-here",
+        "MILKEE_COMPANY_ID": "your-company-id-here"
       }
     }
   }
 }
 ```
 
-## Available Tools
+### 3. Restart Claude Desktop
+
+That's it! Ask Claude something like "List my MILKEE customers" to test.
+
+---
+
+## Usage with Claude Code (CLI)
+
+Add to your Claude Code config or run:
+
+```bash
+claude mcp add milkee -- npx -y milkee-mcp
+```
+
+Then set environment variables `MILKEE_API_TOKEN` and `MILKEE_COMPANY_ID`.
+
+---
+
+## What Can It Do?
+
+| Category | Capabilities |
+|----------|--------------|
+| **Customers** | List, create, update, delete customers. View financial statistics per customer. |
+| **Projects** | Manage projects, track budgets, bulk archive/unarchive. |
+| **Time Tracking** | Log time entries, start/stop timer, view hours by project. |
+| **Bookkeeping** | Create income/expense entries, manage accounts, handle VAT. |
+| **Products** | Manage your product/service catalog. |
+| **Tags** | Organize with color-coded labels. |
+| **Tasks** | Track project tasks with status (open/in-progress/done). |
+| **Contacts** | Manage contacts per customer. |
+
+### Example Prompts
+
+- "Show all my active projects"
+- "How many hours did I track this week?"
+- "Start a timer for the Acme Corp project"
+- "Create a new customer called Example AG in Zurich"
+- "List all expenses tagged as 'office'"
+- "What's my income this month?"
+
+---
+
+## All Available Tools
+
+<details>
+<summary>Click to expand full tool list (50+ tools)</summary>
 
 ### Customers
 - `milkee_list_customers` - List customers with filtering
@@ -137,23 +172,55 @@ Add to your `claude_desktop_config.json`:
 - `milkee_update_contact` - Update contact
 - `milkee_delete_contact` - Delete contact
 
+</details>
+
+---
+
+## Security
+
+- Your API token stays on your machine (in Claude's config file)
+- This MCP runs locally - your credentials are never sent anywhere except directly to MILKEE's API
+- The source code is fully open: [GitHub](https://github.com/thwinter-ch/milkee-mcp)
+
+---
+
+## Troubleshooting
+
+**"MILKEE_API_TOKEN and MILKEE_COMPANY_ID environment variables are required"**
+→ Check your Claude config has the correct env variables set.
+
+**Claude doesn't show MILKEE tools**
+→ Restart Claude Desktop after editing the config.
+
+**API errors**
+→ Verify your API token is valid and hasn't expired in MILKEE settings.
+
+---
+
 ## Development
 
+Want to contribute or run from source?
+
 ```bash
-# Install dependencies
+git clone https://github.com/thwinter-ch/milkee-mcp.git
+cd milkee-mcp
 npm install
-
-# Build
 npm run build
-
-# Watch mode
-npm run dev
 ```
 
-## API Documentation
+Run locally:
+```bash
+MILKEE_API_TOKEN=xxx MILKEE_COMPANY_ID=123 node dist/index.js
+```
 
+---
+
+## Links
+
+- [MILKEE Website](https://milkee.ch)
 - [MILKEE API Docs](https://apidocs.milkee.ch/)
-- [API Overview](https://apidocs.milkee.ch/api/)
+- [MCP Protocol](https://modelcontextprotocol.io)
+- [Report Issues](https://github.com/thwinter-ch/milkee-mcp/issues)
 
 ## License
 
