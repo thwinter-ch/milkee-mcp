@@ -2,23 +2,53 @@
 
 Give Claude AI direct access to your [MILKEE](https://milkee.ch) Swiss accounting software.
 
-> Independent community project, not an official MILKEE GmbH product.
+## What is MILKEE?
 
-## Contents
+[MILKEE](https://milkee.ch) is Swiss accounting software for freelancers and small businesses:
+- **Invoicing** - QR invoices (Swiss QR-bill standard)
+- **Proposals** - Quotes that convert to invoices
+- **Bookkeeping** - Double-entry accounting, VAT
+- **Time Tracking** - Hours, timers, billable tracking
+- **Customers** - Contact and billing management
 
-- [What You Get](#what-you-get)
-- [Report Types](#report-types)
-- [Example Prompts](#example-prompts)
-- [Setup](#setup)
-- [All Tools](#all-tools)
-- [Security](#security)
-- [Development](#development)
+## What is this MCP Server?
+
+This MCP server connects Claude to your MILKEE account, letting you ask natural questions about your business finances, create invoices, manage proposals, and more.
+
+Works with **Claude Desktop**, **Claude Code (CLI)**, and **claude.ai** (with MCP support).
 
 ---
 
-## What You Get
+## Links
 
-Ask Claude natural questions about your business finances:
+- [MILKEE](https://milkee.ch) | [API Docs](https://apidocs.milkee.ch/) | [MCP Protocol](https://modelcontextprotocol.io)
+- [Changelog](CHANGELOG.md) | [Issues](https://github.com/thwinter-ch/milkee-mcp/issues) | [Source Code](https://github.com/thwinter-ch/milkee-mcp)
+
+## Disclaimer
+
+Independent community project, not an official MILKEE GmbH product. Provided "as is" without warranty. Use at your own risk.
+
+## Disclosure
+
+The author ([Thomas Winter](https://github.com/thwinter-ch)) serves as an advisor to MILKEE GmbH.
+
+## License
+
+MIT
+
+---
+
+## Contents
+
+- [What You Can Do](#what-you-can-do)
+- [Report Types](#report-types)
+- [Example Prompts](#example-prompts)
+- [Setup](#setup)
+- [Reference](#reference)
+
+---
+
+## What You Can Do
 
 | Ask Claude... | You Get |
 |---------------|---------|
@@ -28,21 +58,19 @@ Ask Claude natural questions about your business finances:
 | "Create an invoice for Acme Corp" | New invoice created in MILKEE |
 | "Which customers owe me money?" | Overdue invoice breakdown by customer |
 
-Works with **Claude Desktop**, **Claude Code (CLI)**, and **claude.ai** (with MCP support).
-
 ---
 
 ## Report Types
 
-Claude can generate different levels of financial reports depending on how you ask:
+Claude generates different levels of reports depending on how you ask:
 
 ### Quick Summary
 **Prompt:** "How is my business doing?"
 
-Fast overview using a single API call. Returns:
+Fast overview using a single API call:
 - Revenue, expenses, net profit, profit margin
 - Bank balance
-- Invoice counts by status (paid, pending, overdue)
+- Invoice counts by status
 - Outstanding receivables
 
 ```
@@ -59,7 +87,7 @@ Financial Health
 ### Deep Financial Assessment
 **Prompt:** "Give me a complete financial assessment"
 
-Comprehensive analysis using multiple API calls. Returns everything above plus:
+Comprehensive analysis using multiple API calls. Everything above plus:
 - Monthly revenue trends
 - Top 10 customers by revenue
 - Expense breakdown by category
@@ -87,12 +115,8 @@ Top Customers by Revenue
 ### Invoice & Proposal Reports
 **Prompts:** "Show my invoices", "List pending proposals", "What's overdue?"
 
-Focused lists with filtering options.
-
 ### Customer Analysis
 **Prompt:** "Show me statistics for [customer name]"
-
-Billing history and revenue for a specific customer you invoice.
 
 ---
 
@@ -132,15 +156,6 @@ Billing history and revenue for a specific customer you invoice.
 ---
 
 ## Setup
-
-### What is MILKEE?
-
-[MILKEE](https://milkee.ch) is Swiss accounting software for freelancers and small businesses:
-- **Invoicing** - QR invoices (Swiss QR-bill standard)
-- **Proposals** - Quotes that convert to invoices
-- **Bookkeeping** - Double-entry accounting, VAT
-- **Time Tracking** - Hours, timers, billable tracking
-- **Customers** - Contact and billing management
 
 ### Get Your Credentials
 
@@ -204,7 +219,9 @@ claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-i
 
 ---
 
-## Understanding Your Data
+## Reference
+
+### Understanding Your Data
 
 | Term | Meaning | Example |
 |------|---------|---------|
@@ -214,17 +231,15 @@ claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-i
 - "How is **my business** doing?" → Your company's financials
 - "Show **customer** statistics for Acme" → Stats about someone you invoice
 
----
-
-## All Tools
+### All Tools
 
 <details>
 <summary>Click to expand (71 tools)</summary>
 
-### Company
+#### Company
 - `milkee_get_company_summary` - Your business overview
 
-### Invoices
+#### Invoices
 - `milkee_list_invoices` - List with filtering
 - `milkee_get_invoice` - Full details
 - `milkee_create_invoice` - Create new
@@ -233,7 +248,7 @@ claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-i
 - `milkee_mark_invoice_paid` - Mark paid
 - `milkee_send_invoice` - Send via email
 
-### Proposals
+#### Proposals
 - `milkee_list_proposals` - List quotes
 - `milkee_get_proposal` - Full details
 - `milkee_create_proposal` - Create new
@@ -242,7 +257,7 @@ claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-i
 - `milkee_convert_proposal_to_invoice` - Convert
 - `milkee_send_proposal` - Send via email
 
-### Customers
+#### Customers
 - `milkee_list_customers` - List with filtering
 - `milkee_get_customer` - Full details
 - `milkee_create_customer` - Create new
@@ -250,7 +265,7 @@ claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-i
 - `milkee_delete_customer` - Delete
 - `milkee_get_customer_statistics` - Financial stats
 
-### Bookkeeping
+#### Bookkeeping
 - `milkee_list_entries` - Ledger entries
 - `milkee_get_entry` - Entry details
 - `milkee_create_entry` - Create entry
@@ -259,45 +274,40 @@ claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-i
 - `milkee_get_next_entry_number` - Next number
 - `milkee_bulk_delete_entries` - Bulk delete
 
-### Projects
+#### Projects
 - `milkee_list_projects`, `milkee_get_project`, `milkee_create_project`, `milkee_update_project`, `milkee_delete_project`, `milkee_bulk_archive_projects`
 
-### Tasks
+#### Tasks
 - `milkee_list_tasks`, `milkee_get_task`, `milkee_create_task`, `milkee_update_task`, `milkee_delete_task`
 
-### Time Tracking
+#### Time Tracking
 - `milkee_list_times`, `milkee_get_time`, `milkee_create_time`, `milkee_update_time`, `milkee_delete_time`
 - `milkee_get_timer`, `milkee_start_timer`, `milkee_stop_timer`, `milkee_update_timer_description`, `milkee_discard_timer`
 
-### Products
+#### Products
 - `milkee_list_products`, `milkee_get_product`, `milkee_create_product`, `milkee_update_product`, `milkee_delete_product`
 
-### Accounts
+#### Accounts
 - `milkee_list_accounts`, `milkee_get_account`, `milkee_create_account`, `milkee_update_account`, `milkee_delete_account`
 
-### Tags
+#### Tags
 - `milkee_list_tags`, `milkee_get_tag`, `milkee_create_tag`, `milkee_update_tag`, `milkee_delete_tag`, `milkee_get_tag_colors`
 
-### Tax Rates
+#### Tax Rates
 - `milkee_list_tax_rates`, `milkee_get_tax_rate`
 
-### Contacts
+#### Contacts
 - `milkee_list_contacts`, `milkee_create_contact`, `milkee_update_contact`, `milkee_delete_contact`
 
 </details>
 
----
-
-## Security
+### Security
 
 - API token stays on your machine
 - MCP runs locally - credentials only sent to MILKEE's API
 - Use **read-only mode** for safe analysis
-- Source code: [GitHub](https://github.com/thwinter-ch/milkee-mcp)
 
----
-
-## Troubleshooting
+### Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
@@ -306,9 +316,7 @@ claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-i
 | API errors | Verify token in MILKEE Settings > API |
 | Stale version | Use `milkee-mcp@latest` not `milkee-mcp` |
 
----
-
-## Development
+### Development
 
 ```bash
 git clone https://github.com/thwinter-ch/milkee-mcp.git
@@ -337,22 +345,3 @@ Point Claude Desktop to local build:
   }
 }
 ```
-
----
-
-## Links
-
-- [MILKEE](https://milkee.ch) | [API Docs](https://apidocs.milkee.ch/) | [MCP Protocol](https://modelcontextprotocol.io)
-- [Changelog](CHANGELOG.md) | [Issues](https://github.com/thwinter-ch/milkee-mcp/issues)
-
-## Disclaimer
-
-Experimental project provided "as is" without warranty. Use at your own risk.
-
-## Disclosure
-
-The author ([Thomas Winter](https://github.com/thwinter-ch)) serves as an advisor to MILKEE GmbH.
-
-## License
-
-MIT
