@@ -78,9 +78,9 @@ Monthly Revenue Trend
 
 Top Customers by Revenue
 ┌─────────────────┬───────────────┐
-│ Hirschberg AG   │ CHF 9'236.00  │
-│ Belgrill AG     │ CHF 6'856.70  │
-│ Glockenhof      │ CHF 3'853.00  │
+│ Migros          │ CHF 9'236.00  │
+│ Veloblitz       │ CHF 6'856.70  │
+│ Bridge AG       │ CHF 3'853.00  │
 └─────────────────┴───────────────┘
 ```
 
