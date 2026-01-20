@@ -2,6 +2,8 @@
 
 Give Claude AI direct access to your [MILKEE](https://milkee.ch) Swiss accounting software.
 
+**[Deutsche Anleitung / German Guide](QUICKSTART.de.md)**
+
 ## What is MILKEE?
 
 [MILKEE](https://milkee.ch) is Swiss accounting software for freelancers and small businesses:
@@ -19,7 +21,7 @@ Works with **Claude Desktop** and **Claude Code (CLI)**.
 
 ---
 
-[MILKEE](https://milkee.ch) | [API Docs](https://apidocs.milkee.ch/) | [MCP Protocol](https://modelcontextprotocol.io) | [Changelog](CHANGELOG.md) | [Deutsche Anleitung](QUICKSTART.de.md)
+[MILKEE](https://milkee.ch) | [API Docs](https://apidocs.milkee.ch/) | [MCP Protocol](https://modelcontextprotocol.io) | [Changelog](CHANGELOG.md)
 
 ## Disclaimer
 

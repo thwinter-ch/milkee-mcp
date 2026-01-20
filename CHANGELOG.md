@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.10] - 2025-01-20
+- Added German quick start guide (QUICKSTART.de.md)
+
+## [1.2.9] - 2025-01-20
+- Links on one line, removed redundant Issues/Source links
+- Removed claude.ai claim (MCP only works with Desktop/CLI)
+- Moved All Tools section before Setup
+
+## [1.2.8] - 2025-01-20
+- Restructured README: intro → legal → features → setup
+- Removed duplicate "independent community project" mention
+
+## [1.2.7] - 2025-01-20
+- Cleaned up setup section (Desktop and Code configs together)
+
+## [1.2.6] - 2025-01-20
+- Single prompt for deep assessment
+- Separate full-access and read-only CLI commands
+
+## [1.2.5] - 2025-01-20
+- Replaced real customer names in README examples
+
+## [1.2.4] - 2025-01-20
+- Fixed entries include parameter (credit_account, debit_account, etc.)
+- Clarified prompt differentiation
+
 ## [1.2.3] - 2025-01-20
 - Restructured README for usability - lead with value, not setup
 - Added table of contents with jump links
