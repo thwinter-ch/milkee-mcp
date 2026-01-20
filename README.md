@@ -57,7 +57,7 @@ Financial Health
 ```
 
 ### Deep Financial Assessment
-**Prompt:** "Give me a complete financial assessment" or "Analyze my business finances in detail"
+**Prompt:** "Give me a complete financial assessment"
 
 Comprehensive analysis using multiple API calls. Returns everything above plus:
 - Monthly revenue trends
@@ -176,13 +176,19 @@ Restart Claude Desktop. Test with: "List my MILKEE invoices"
 
 ### Claude Code (CLI)
 
+**Full access:**
 ```bash
 claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-id -- npx -y milkee-mcp@latest
 ```
 
+**Read-only** (recommended for analysis):
+```bash
+claude mcp add milkee-readonly -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-id -e MILKEE_READ_ONLY=true -- npx -y milkee-mcp@latest
+```
+
 ### Read-Only Mode
 
-For analysis without risk of modifications, add `MILKEE_READ_ONLY=true`:
+Add `MILKEE_READ_ONLY=true` to only expose list/get tools - no create, update, delete, or send. Recommended for financial analysis.
 
 **Claude Desktop:**
 ```json
@@ -192,13 +198,6 @@ For analysis without risk of modifications, add `MILKEE_READ_ONLY=true`:
   "MILKEE_READ_ONLY": "true"
 }
 ```
-
-**Claude Code:**
-```bash
-claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-id -e MILKEE_READ_ONLY=true -- npx -y milkee-mcp@latest
-```
-
-Read-only mode only exposes list/get tools - no create, update, delete, or send.
 
 ---
 
