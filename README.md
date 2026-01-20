@@ -389,11 +389,11 @@ For local development with Claude Desktop, point to your local build:
 
 This is an **experimental project** provided "as is" without warranty of any kind. Use at your own risk. The author assumes no responsibility for any damages, data loss, or issues arising from the use of this software.
 
-This is an unofficial community project and is not affiliated with, endorsed by, or supported by MILKEE AG.
+This is an independent community project, not an official MILKEE GmbH product.
 
 ## Disclosure
 
-The author of this project ([Thomas Winter](https://github.com/thwinter-ch)) serves as an advisor to MILKEE.
+The author of this project ([Thomas Winter](https://github.com/thwinter-ch)) serves as an advisor to MILKEE GmbH.
 
 ## License
 
