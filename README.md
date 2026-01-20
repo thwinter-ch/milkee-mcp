@@ -15,14 +15,11 @@ Give Claude AI direct access to your [MILKEE](https://milkee.ch) Swiss accountin
 
 This MCP server connects Claude to your MILKEE account, letting you ask natural questions about your business finances, create invoices, manage proposals, and more.
 
-Works with **Claude Desktop**, **Claude Code (CLI)**, and **claude.ai** (with MCP support).
+Works with **Claude Desktop** and **Claude Code (CLI)**.
 
 ---
 
-## Links
-
-- [MILKEE](https://milkee.ch) | [API Docs](https://apidocs.milkee.ch/) | [MCP Protocol](https://modelcontextprotocol.io)
-- [Changelog](CHANGELOG.md) | [Issues](https://github.com/thwinter-ch/milkee-mcp/issues) | [Source Code](https://github.com/thwinter-ch/milkee-mcp)
+[MILKEE](https://milkee.ch) | [API Docs](https://apidocs.milkee.ch/) | [MCP Protocol](https://modelcontextprotocol.io) | [Changelog](CHANGELOG.md)
 
 ## Disclaimer
 
@@ -43,6 +40,7 @@ MIT
 - [What You Can Do](#what-you-can-do)
 - [Report Types](#report-types)
 - [Example Prompts](#example-prompts)
+- [All Tools](#all-tools)
 - [Setup](#setup)
 - [Reference](#reference)
 
@@ -155,6 +153,78 @@ Top Customers by Revenue
 
 ---
 
+## All Tools
+
+<details>
+<summary>Click to expand (71 tools)</summary>
+
+### Company
+- `milkee_get_company_summary` - Your business overview
+
+### Invoices
+- `milkee_list_invoices` - List with filtering
+- `milkee_get_invoice` - Full details
+- `milkee_create_invoice` - Create new
+- `milkee_update_invoice` - Modify
+- `milkee_delete_invoice` - Delete draft
+- `milkee_mark_invoice_paid` - Mark paid
+- `milkee_send_invoice` - Send via email
+
+### Proposals
+- `milkee_list_proposals` - List quotes
+- `milkee_get_proposal` - Full details
+- `milkee_create_proposal` - Create new
+- `milkee_update_proposal` - Modify
+- `milkee_delete_proposal` - Delete
+- `milkee_convert_proposal_to_invoice` - Convert
+- `milkee_send_proposal` - Send via email
+
+### Customers
+- `milkee_list_customers` - List with filtering
+- `milkee_get_customer` - Full details
+- `milkee_create_customer` - Create new
+- `milkee_update_customer` - Modify
+- `milkee_delete_customer` - Delete
+- `milkee_get_customer_statistics` - Financial stats
+
+### Bookkeeping
+- `milkee_list_entries` - Ledger entries
+- `milkee_get_entry` - Entry details
+- `milkee_create_entry` - Create entry
+- `milkee_update_entry` - Modify
+- `milkee_delete_entry` - Delete
+- `milkee_get_next_entry_number` - Next number
+- `milkee_bulk_delete_entries` - Bulk delete
+
+### Projects
+- `milkee_list_projects`, `milkee_get_project`, `milkee_create_project`, `milkee_update_project`, `milkee_delete_project`, `milkee_bulk_archive_projects`
+
+### Tasks
+- `milkee_list_tasks`, `milkee_get_task`, `milkee_create_task`, `milkee_update_task`, `milkee_delete_task`
+
+### Time Tracking
+- `milkee_list_times`, `milkee_get_time`, `milkee_create_time`, `milkee_update_time`, `milkee_delete_time`
+- `milkee_get_timer`, `milkee_start_timer`, `milkee_stop_timer`, `milkee_update_timer_description`, `milkee_discard_timer`
+
+### Products
+- `milkee_list_products`, `milkee_get_product`, `milkee_create_product`, `milkee_update_product`, `milkee_delete_product`
+
+### Accounts
+- `milkee_list_accounts`, `milkee_get_account`, `milkee_create_account`, `milkee_update_account`, `milkee_delete_account`
+
+### Tags
+- `milkee_list_tags`, `milkee_get_tag`, `milkee_create_tag`, `milkee_update_tag`, `milkee_delete_tag`, `milkee_get_tag_colors`
+
+### Tax Rates
+- `milkee_list_tax_rates`, `milkee_get_tax_rate`
+
+### Contacts
+- `milkee_list_contacts`, `milkee_create_contact`, `milkee_update_contact`, `milkee_delete_contact`
+
+</details>
+
+---
+
 ## Setup
 
 ### Get Your Credentials
@@ -230,76 +300,6 @@ claude mcp add milkee -e MILKEE_API_TOKEN=your-token -e MILKEE_COMPANY_ID=your-i
 
 - "How is **my business** doing?" → Your company's financials
 - "Show **customer** statistics for Acme" → Stats about someone you invoice
-
-### All Tools
-
-<details>
-<summary>Click to expand (71 tools)</summary>
-
-#### Company
-- `milkee_get_company_summary` - Your business overview
-
-#### Invoices
-- `milkee_list_invoices` - List with filtering
-- `milkee_get_invoice` - Full details
-- `milkee_create_invoice` - Create new
-- `milkee_update_invoice` - Modify
-- `milkee_delete_invoice` - Delete draft
-- `milkee_mark_invoice_paid` - Mark paid
-- `milkee_send_invoice` - Send via email
-
-#### Proposals
-- `milkee_list_proposals` - List quotes
-- `milkee_get_proposal` - Full details
-- `milkee_create_proposal` - Create new
-- `milkee_update_proposal` - Modify
-- `milkee_delete_proposal` - Delete
-- `milkee_convert_proposal_to_invoice` - Convert
-- `milkee_send_proposal` - Send via email
-
-#### Customers
-- `milkee_list_customers` - List with filtering
-- `milkee_get_customer` - Full details
-- `milkee_create_customer` - Create new
-- `milkee_update_customer` - Modify
-- `milkee_delete_customer` - Delete
-- `milkee_get_customer_statistics` - Financial stats
-
-#### Bookkeeping
-- `milkee_list_entries` - Ledger entries
-- `milkee_get_entry` - Entry details
-- `milkee_create_entry` - Create entry
-- `milkee_update_entry` - Modify
-- `milkee_delete_entry` - Delete
-- `milkee_get_next_entry_number` - Next number
-- `milkee_bulk_delete_entries` - Bulk delete
-
-#### Projects
-- `milkee_list_projects`, `milkee_get_project`, `milkee_create_project`, `milkee_update_project`, `milkee_delete_project`, `milkee_bulk_archive_projects`
-
-#### Tasks
-- `milkee_list_tasks`, `milkee_get_task`, `milkee_create_task`, `milkee_update_task`, `milkee_delete_task`
-
-#### Time Tracking
-- `milkee_list_times`, `milkee_get_time`, `milkee_create_time`, `milkee_update_time`, `milkee_delete_time`
-- `milkee_get_timer`, `milkee_start_timer`, `milkee_stop_timer`, `milkee_update_timer_description`, `milkee_discard_timer`
-
-#### Products
-- `milkee_list_products`, `milkee_get_product`, `milkee_create_product`, `milkee_update_product`, `milkee_delete_product`
-
-#### Accounts
-- `milkee_list_accounts`, `milkee_get_account`, `milkee_create_account`, `milkee_update_account`, `milkee_delete_account`
-
-#### Tags
-- `milkee_list_tags`, `milkee_get_tag`, `milkee_create_tag`, `milkee_update_tag`, `milkee_delete_tag`, `milkee_get_tag_colors`
-
-#### Tax Rates
-- `milkee_list_tax_rates`, `milkee_get_tax_rate`
-
-#### Contacts
-- `milkee_list_contacts`, `milkee_create_contact`, `milkee_update_contact`, `milkee_delete_contact`
-
-</details>
 
 ### Security
 
