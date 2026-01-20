@@ -2,6 +2,8 @@
 
 Give Claude AI direct access to your [MILKEE](https://milkee.ch) accounting data - customers, time tracking, invoices, bookkeeping, and more.
 
+> **Note:** This is an unofficial community project, not an official MILKEE product.
+
 ## What is this?
 
 [MILKEE](https://milkee.ch) is Swiss accounting software for freelancers and small businesses.
@@ -221,6 +223,16 @@ MILKEE_API_TOKEN=xxx MILKEE_COMPANY_ID=123 node dist/index.js
 - [MILKEE API Docs](https://apidocs.milkee.ch/)
 - [MCP Protocol](https://modelcontextprotocol.io)
 - [Report Issues](https://github.com/thwinter-ch/milkee-mcp/issues)
+
+## Disclaimer
+
+This is an **experimental project** provided "as is" without warranty of any kind. Use at your own risk. The author assumes no responsibility for any damages, data loss, or issues arising from the use of this software.
+
+This is an unofficial community project and is not affiliated with, endorsed by, or supported by MILKEE AG.
+
+## Disclosure
+
+The author of this project ([Thomas Winter](https://github.com/thwinter-ch)) serves as an advisor to MILKEE.
 
 ## License
 
