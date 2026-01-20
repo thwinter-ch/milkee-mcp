@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.3] - 2025-01-20
+- Restructured README for usability - lead with value, not setup
+- Added table of contents with jump links
+- Documented report types (Quick Summary vs Deep Financial Assessment)
+- Added example output showing what each report produces
+- Excluded test files from npm package
+
+## [1.2.2] - 2025-01-20
+- Removed .claude/ from repo (local config)
+- Changed example company from Tafelwart to Blizzard Ventures
+- Created separate CHANGELOG.md
+- Added Claude Code CLI instructions for read-only mode
+
 ## [1.2.1] - 2025-01-20
 - Fixed disclaimer wording (MILKEE GmbH, not AG)
 - Simplified "independent community project" language
