@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.12] - 2025-01-21
+- Added BUILD_DIARY.md documenting how the MCP was built
+
+## [1.2.11] - 2025-01-20
+- Updated changelog, prominent German link in README
+
 ## [1.2.10] - 2025-01-20
 - Added German quick start guide (QUICKSTART.de.md)
 
