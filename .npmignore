@@ -7,6 +7,9 @@ tsconfig.json
 .vscode/
 .idea/
 
+# Content (marketing, scripts)
+content/
+
 # Development files
 *.log
 .env

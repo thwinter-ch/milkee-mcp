@@ -536,7 +536,7 @@ const tools: Tool[] = [
 
   {
     name: 'milkee_upload_entry_file',
-    description: 'Upload a file (receipt, document) to attach to a bookkeeping entry (Buchung). The entry must already exist. Automatically fetches required entry fields before uploading.',
+    description: 'Upload a file (receipt, document) to attach to an EXISTING bookkeeping entry (Buchung). Use milkee_create_entry_with_file to create a new entry with a file in one step.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -544,6 +544,27 @@ const tools: Tool[] = [
         file_path: { type: 'string', description: 'Absolute path to the file to upload (required)' },
       },
       required: ['entry_id', 'file_path'],
+    },
+  },
+  {
+    name: 'milkee_create_entry_with_file',
+    description: 'Create a new bookkeeping entry (Buchung) AND attach a file (receipt/Beleg) in one step. Combines entry creation + file upload. Use this when you have a receipt to attach to a new transaction.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        date: { type: 'string', description: 'Date (YYYY-MM-DD, required)' },
+        debit_account_id: { type: 'number', description: 'Debit account ID (required)' },
+        credit_account_id: { type: 'number', description: 'Credit account ID (required)' },
+        file_path: { type: 'string', description: 'Absolute path to the receipt/file to attach (required)' },
+        description: { type: 'string', description: 'Entry description' },
+        sum: { type: 'number', description: 'Amount' },
+        customer_id: { type: 'number', description: 'Customer ID' },
+        project_id: { type: 'number', description: 'Project ID' },
+        tax_rate_id: { type: 'number', description: 'Tax rate ID' },
+        tag_ids: { type: 'array', items: { type: 'number' }, description: 'Tag IDs' },
+        billable: { type: 'boolean', description: 'Is billable' },
+      },
+      required: ['date', 'debit_account_id', 'credit_account_id', 'file_path'],
     },
   },
 
@@ -1388,6 +1409,18 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
           file_id: entryData.file_id,
           file: entryData.file,
           message: `File uploaded to entry ${entryData.id}`,
+        }, null, 2);
+      }
+      case 'milkee_create_entry_with_file': {
+        const { file_path, ...entryFields } = args;
+        const result = await api.createEntryWithFile(entryFields as any, file_path as string);
+        const entryData = (result as any).data || result;
+        return JSON.stringify({
+          success: true,
+          entry_id: entryData.id,
+          file_id: entryData.file_id,
+          file: entryData.file,
+          message: `Entry ${entryData.id} created with file attached`,
         }, null, 2);
       }
 

@@ -293,6 +293,19 @@ export class MilkeeApi {
     return response.json();
   }
 
+  async createEntryWithFile(data: CreateEntryInput, filePath: string): Promise<{ data: Entry }> {
+    // Step 1: Create the entry
+    const created = await this.createEntry(data);
+    const entryId = (created as any).data?.id || (created as any).id;
+
+    if (!entryId) {
+      throw new Error('Entry created but no ID returned');
+    }
+
+    // Step 2: Upload the file to the new entry
+    return this.uploadEntryFile(entryId, filePath);
+  }
+
   // ==================== PRODUCTS ====================
 
   async listProducts(params?: PaginationParams & {
