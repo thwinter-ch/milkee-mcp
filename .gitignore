@@ -6,3 +6,4 @@ dist/
 .claude/
 test/
 test-*.js
+content/

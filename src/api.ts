@@ -3,6 +3,9 @@
  * Base URL: https://app.milkee.ch/api/v2
  */
 
+import { readFile } from 'node:fs/promises';
+import { basename } from 'node:path';
+
 const BASE_URL = 'https://app.milkee.ch/api/v2';
 
 export interface MilkeeConfig {
@@ -253,6 +256,41 @@ export class MilkeeApi {
 
   async bulkUpdateEntries(ids: number[], updates: Record<string, unknown>) {
     return this.request<void>('PUT', '/entries/multiple', { ids, ...updates });
+  }
+
+  async uploadEntryFile(entryId: number, filePath: string): Promise<{ data: Entry }> {
+    // First, fetch the entry to get required fields
+    const entry = await this.getEntry(entryId);
+    const entryData = (entry as any).data || entry;
+
+    // Read the file from disk
+    const fileBuffer = await readFile(filePath);
+    const fileName = basename(filePath);
+
+    // Build multipart/form-data with Laravel _method=PUT spoofing
+    const formData = new FormData();
+    formData.append('_method', 'PUT');
+    formData.append('file', new Blob([fileBuffer]), fileName);
+    formData.append('date', entryData.date);
+    formData.append('debit_account_id', String(entryData.debit_account_id));
+    formData.append('credit_account_id', String(entryData.credit_account_id));
+
+    const url = `${BASE_URL}/companies/${this.companyId}/entries/${entryId}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiToken}`,
+        'Accept': 'application/json',
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`MILKEE API Error ${response.status}: ${errorText}`);
+    }
+
+    return response.json();
   }
 
   // ==================== PRODUCTS ====================

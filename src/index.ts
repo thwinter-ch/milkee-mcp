@@ -534,6 +534,19 @@ const tools: Tool[] = [
     },
   },
 
+  {
+    name: 'milkee_upload_entry_file',
+    description: 'Upload a file (receipt, document) to attach to a bookkeeping entry (Buchung). The entry must already exist. Automatically fetches required entry fields before uploading.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        entry_id: { type: 'number', description: 'Bookkeeping entry ID (required)' },
+        file_path: { type: 'string', description: 'Absolute path to the file to upload (required)' },
+      },
+      required: ['entry_id', 'file_path'],
+    },
+  },
+
   // ==================== PRODUCTS ====================
   {
     name: 'milkee_list_products',
@@ -1365,6 +1378,17 @@ async function handleToolCall(name: string, args: Record<string, unknown>): Prom
       case 'milkee_bulk_delete_entries': {
         await api.bulkDeleteEntries(args.ids as number[]);
         return JSON.stringify({ success: true, message: 'Entries deleted' });
+      }
+      case 'milkee_upload_entry_file': {
+        const result = await api.uploadEntryFile(args.entry_id as number, args.file_path as string);
+        const entryData = (result as any).data || result;
+        return JSON.stringify({
+          success: true,
+          entry_id: entryData.id,
+          file_id: entryData.file_id,
+          file: entryData.file,
+          message: `File uploaded to entry ${entryData.id}`,
+        }, null, 2);
       }
 
       // Products
